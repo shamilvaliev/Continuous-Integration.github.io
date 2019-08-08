@@ -1,0 +1,339 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="./scr.js"></script>
+    <script src="./lodash.js"></script>
+
+</head>
+<body>
+    <script>
+
+        function isFunction(obj) {
+            return obj instanceof Function;
+        }
+
+        function isArray(obj) {
+            return obj instanceof Array;
+        }
+
+        function isString(obj) {
+            return typeof obj === 'string' || obj instanceof String;
+        }
+
+
+
+
+        function getValueByKey(keyValArr, key) {
+            for (let i = 0; i < keyValArr.length; i++) {
+                if (keyValArr[i][0] === key) {
+                    return {
+                        found: true,
+                        value: keyValArr[i][1]
+                    };
+                }
+            }
+
+            return {
+                found: false,
+                value: null
+            };
+        }
+
+        function checkByObjProps(item, val) {
+            let itemEntries = Object.entries(item);
+            let valEntries = Object.entries(val);
+            let allIsEquals = true;
+            for (let i = 0; i < valEntries.length; i++) {
+                let foundRes = getValueByKey(itemEntries, valEntries[i][0]);
+                if (foundRes.found && foundRes.value !== valEntries[i][1]) {
+                    allIsEquals = false;
+                    break;
+                }
+            }
+
+            return allIsEquals;
+        }
+
+        function checkByArrayProps(item, keyValProps) {
+            let itemEntries = Object.entries(item);
+            let foundRes = getValueByKey(itemEntries, keyValProps[0]);
+            return foundRes.found && foundRes.value === keyValProps[1];
+        }
+
+        function checkByProp(item, propName) {
+            let itemEntries = Object.entries(item);
+            let foundRes = getValueByKey(itemEntries, propName);
+            return foundRes.found && foundRes.value;
+        }
+        const shortIterFunc = (arr, predicate, val) => {
+            let ind = 0;
+            let res = [];
+            for (let i = 0; i < arr.length; i++) {
+                if (predicate(arr[i], val)) {
+                    res[ind++] = arr[i];
+                }
+            }
+
+            return res;
+        }
+
+        function filter(arr, predicate) {
+            if (isFunction(predicate)) {
+                let ind = 0;
+                let res = [];
+                for (let i = 0; i < arr.length; i++) {
+                    if (predicate(arr[i], i, arr)) {
+                        res[ind++] = arr[i];
+                    }
+                }
+
+                return res;
+            } else {
+                if (isArray(predicate)) {
+                    return shortIterFunc(arr, checkByArrayProps, predicate);
+                } else {
+                    if (isString(predicate)) {
+                        return shortIterFunc(arr, checkByProp, predicate);
+                    }
+
+                    return shortIterFunc(arr, checkByObjProps, predicate);
+                }
+            }
+        };
+
+
+
+
+
+        function getValueByKey1(keyValArr, key) {
+            for (let i = 0; i < keyValArr.length; i++) {
+                if (keyValArr[i][0] === key) {
+                    return {
+                        found: true,
+                        value: keyValArr[i][1]
+                    };
+                }
+            }
+
+            return {
+                found: false,
+                value: null
+            };
+        }
+
+        function checkByObjProps1(item, val) {
+            let itemEntries = Object.entries(item);
+            let valEntries = Object.entries(val);
+            let allIsEquals = true;
+            for (let i = 0; i < valEntries.length; i++) {
+                let foundRes = getValueByKey(itemEntries, valEntries[i][0]);
+                if (foundRes.found && foundRes.value !== valEntries[i][1]) {
+                    allIsEquals = false;
+                    break;
+                }
+            }
+
+            return allIsEquals;
+        }
+
+        var users = [
+            { 'user': 'barney', 'age': 36, 'active': true },
+            { 'user': 'fred', 'age': 40, 'active': false }
+        ];
+
+        function filter2(arr, predicate) {
+            let ind = 0;
+            let res = [];
+            if (isFunction(predicate)) {
+                for (let i = 0; i < arr.length; i++) {
+                    if (predicate(arr[i], i, arr)) {
+                        res[ind++] = arr[i];
+                    }
+                }
+            } else {
+                for (let i = 0; i < arr.length; i++) {
+                    if (checkByObjProps(arr[i], predicate)) {
+                        res[ind++] = arr[i];
+                    }
+                }
+            }
+
+
+            return res;
+        };
+
+        //console.log(filter(users, function (o) { return !o.active; }));
+        //// => objects for ['fred']
+
+        //// The `console.log(matches` iteratee shorthand.
+        console.log(filter(users, { 'age': 36, 'active': true }));
+        debugger;
+        console.log(filter(users, 'active'));
+
+        
+       
+        function getSubArray(arr, len, startInd) {
+            let arrLen = startInd + len > arr.length ? arr.length - len : len;
+            let result = new Array(arrLen);
+            for (let i = startInd;
+                (i < startInd + len) && (i < arr.length); i++) {
+                result[i - startInd] = arr[i];
+            }
+
+            return result;
+        }
+
+        function chunk(arr, size = 1) {
+            if (!arr) {
+                return []
+            }
+
+            let newArrSize = Math.ceil(arr.length / size);
+            let result = new Array(newArrSize);
+            for (let i = 0; i < newArrSize; i++) {
+                result[i] = getSubArray(arr, size, i * size);
+            }
+           
+            return result
+        }
+
+        console.log(chunk(['a', 'b', 'c', 'd'], 2));
+        // => [['a', 'b'], ['c', 'd']]
+
+        console.log(chunk(['a', 'b', 'c', 'd'], 3));
+
+        function compact(arr) {
+            let res = [];
+            let lastInd = 0;
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i]) {
+                    res[lastInd] = arr[i];
+                    lastInd++;
+                }
+            }
+
+            return res;
+        }
+
+        console.log(compact([0, 1, false, 2, '', 3]));
+
+        function drop(arr, n = 1) {
+            if (arr.length < n || n < 0) {
+                return [];
+            }
+            return getSubArray(arr, arr.length - n, n)
+        }
+
+        console.log(drop([1, 2, 3]));
+        // => [2, 3]
+
+        console.log(drop([1, 2, 3], 2));
+        // => [3]
+
+        console.log(drop([1, 2, 3], 5));
+        // => []
+
+        console.log(drop([1, 2, 3], 0));
+        console.log("---------------------------");
+        function dropWhile(arr, predicate = o => o) {
+
+            let ind = 0;
+            for (let i = 0; i < arr.length; i++) {
+                if (!predicate(arr[i], ind, arr)) {
+                    break;
+                }
+                ind++;
+            }
+
+            return getSubArray(arr, ind, arr.length-ind+1);
+        }
+
+        var users = [
+            { 'user': 'barney', 'active': false },
+            { 'user': 'fred', 'active': false },
+            { 'user': 'pebbles', 'active': true }
+        ];
+
+        console.log(dropWhile(users, function (o) { return !o.active; }));
+
+        function take(arr, n = 1) {
+            if (!arr || n===0) {
+                return [];
+            }
+
+            n = Math.min(n, arr.length);
+            return getSubArray(arr, n, 0);
+        }
+
+        console.log(take([1, 2, 3]))
+        // => [1]
+
+        console.log(take([1, 2, 3], 2));
+        // => [1, 2]
+
+        console.log(take([1, 2, 3], 5));
+        // => [1, 2, 3]
+
+        console.log(take([1, 2, 3], 0));
+
+        function filter1(arr, predicate) {
+            let ind = 0;
+            let res = [];
+            for (let i = 0; i < arr.length; i++) {
+                if (predicate(arr[i], i, arr)) {
+                    res[ind++] = arr[i];
+                }
+            }
+
+            return res;
+        }
+        console.log("---------------------------");
+        var users = [
+            { 'user': 'barney', 'age': 36, 'active': true },
+            { 'user': 'fred', 'age': 40, 'active': false }
+        ];
+
+        //console.log(filter(users, function (o) { return !o.active; }));
+        //// => objects for ['fred']
+
+        //// The `console.log(matches` iteratee shorthand.
+        debugger;
+        console.log(_.filter(users, { 'age': 36, 'active': true }));
+        //// => objects for ['barney']
+
+        //// The `console.log(matchesProperty` iteratee shorthand.
+        //console.log(filter(users, ['active', false]));
+        //// => objects for ['fred']
+
+        //// The `console.log(property` iteratee shorthand.
+        //console.log(filter(users, 'active'));
+// => objects for ['barney']
+
+        console.log("---------------------------");
+        function find(arr, predicate) {
+            for (let i = 0; i < arr.length; i++) {
+                if (predicate(arr[i], i, arr)) {
+                    return arr[i];
+                }
+            }
+
+            return null;
+        };
+
+        function includes(arr, value) {
+            debugger;
+            let len = arr == null ? 0 : arr.length;
+            if (!len) {
+                return false;
+            }
+
+            return find(arr, (item) => item == value) !== null;
+        };
+
+        console.log(includes([1, 2, 3], 1))
+    </script>
+</body>
+</html>
